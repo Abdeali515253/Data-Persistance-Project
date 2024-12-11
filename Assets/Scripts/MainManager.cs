@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -11,17 +12,28 @@ public class MainManager : MonoBehaviour
     public Rigidbody Ball;
 
     public Text ScoreText;
+    public Text BestScoreText;
+    public TMP_Text NameText;
     public GameObject GameOverText;
     
     private bool m_Started = false;
     private int m_Points;
+
+    private int bestScore;
     
     private bool m_GameOver = false;
+
 
     
     // Start is called before the first frame update
     void Start()
     {
+        if (DataPresistor.Instance != null)
+        {
+            BestScoreText.text = "Best Score: " + DataPresistor.Instance.bestScore + " Name: " + DataPresistor.Instance.bestName;
+            bestScore = DataPresistor.Instance.bestScore;
+            NameText.text = DataPresistor.Instance.name;
+        }
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
         
@@ -57,7 +69,7 @@ public class MainManager : MonoBehaviour
         {
             if (Input.GetKeyDown(KeyCode.Space))
             {
-                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+                SceneManager.LoadScene(0);
             }
         }
     }
@@ -66,11 +78,20 @@ public class MainManager : MonoBehaviour
     {
         m_Points += point;
         ScoreText.text = $"Score : {m_Points}";
+        if(m_Points > bestScore && DataPresistor.Instance != null)
+        {
+            bestScore = m_Points;
+            BestScoreText.text = "Best Score: " + bestScore + " Name: " + DataPresistor.Instance.name;
+        }
     }
 
     public void GameOver()
     {
         m_GameOver = true;
         GameOverText.SetActive(true);
+        if (m_Points >= bestScore)
+        {
+            DataPresistor.Instance.SaveScore(DataPresistor.Instance.name, bestScore);
+        }
     }
 }
